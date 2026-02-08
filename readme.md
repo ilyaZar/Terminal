@@ -14,9 +14,11 @@ Download [Package Control](https://packagecontrol.io/) and use the *Package Cont
   Opens a terminal in the project folder containing the currently opened file.  
 - **Switch to Terminal**
   Switches focus to the most recently opened terminal window.
-  On macOS this uses AppleScript. On Linux this requires
-  [xdotool](https://github.com/jordansissel/xdotool), pre-installed or
-  available via your distribution's package manager:
+  Available on macOS (via AppleScript) and Linux (via
+  [xdotool](https://github.com/jordansissel/xdotool)).
+  Not currently supported on Windows.
+
+  On Linux, xdotool must be installed:
 
   - Debian/Ubuntu/Mint: `sudo apt install xdotool`
   - Arch: `sudo pacman -S xdotool`
@@ -33,7 +35,8 @@ To create keyboard shortcuts, open the *Preferences > Package Settings > Termina
 ```json
 [
   { "keys": ["super+shift+t"], "command": "open_terminal" },
-  { "keys": ["super+shift+alt+t"], "command": "open_terminal_project_folder" }
+  { "keys": ["super+shift+alt+t"], "command": "open_terminal_project_folder" },
+  { "keys": ["super+\\"], "command": "switch_to_terminal" }
 ]
 ```
 
@@ -100,7 +103,7 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
 
     Sublime Text also injects the `SUBLIME_TERMINAL_OPENER_WID` environment
     variable into terminals it opens. You can use this to set up a shell
-    keybinding to switch focus back to Sublime Text. Simply add the following
+    key binding to switch focus back to Sublime Text. Simply add the following
     to, e.g., your `~/.bashrc` file:
 
     ```bash
@@ -111,8 +114,8 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
     ```
 
     Here `\C-]` refers to `Ctrl+]`. Any terminal opened from Sublime Text
-    will have this keybinding available in bash sessions that source
-    `~/.bashrc`. The keybinding is arbitrary and easy to change (see
+    will have this key binding available in bash sessions that source
+    `~/.bashrc`. The key binding is arbitrary and easy to change (see
     [here](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html)
     or [here](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html)).
 
