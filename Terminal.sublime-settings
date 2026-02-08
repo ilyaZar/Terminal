@@ -16,5 +16,12 @@
 
 	// For the Mac Terminal.app only, allow reuse of the front-most window,
 	// instead of spawning a new window
-	"reuse_window": false
+	"reuse_window": false,
+
+	// The WM_CLASS of the terminal, used by "Switch to Terminal" on Linux.
+	// If blank, derived from the "terminal" setting. Override this if your
+	// terminal's WM_CLASS differs from its executable name (e.g. gnome-terminal
+	// uses "gnome-terminal-server").
+	// Find yours with: xdotool getactivewindow getwindowclassname
+	"terminal_class": ""
 }

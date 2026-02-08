@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 import os
+import shutil
 import sys
 import subprocess
 
@@ -17,6 +18,11 @@ class NotFoundError(Exception):
 
 
 INSTALLED_DIR = __name__.split('.')[0]
+
+# Stack of terminal window IDs opened from Sublime (Linux only).
+# SwitchToTerminalCommand activates the most recent live window,
+# falling back to older ones when a terminal is closed.
+_terminal_wid_stack = []
 
 
 def get_setting(key, default=None):
@@ -79,6 +85,10 @@ def linux_terminal():
 
     # nothing specific found, return a default
     return 'xterm'
+
+
+def _has_linux_xdotool():
+    return sys.platform == 'linux' and bool(shutil.which('xdotool'))
 
 
 class TerminalSelector():
@@ -161,8 +171,35 @@ class TerminalCommand():
                 else:
                     env[k] = env_setting[k]
 
+            # On Linux, inject Sublime's window ID so the spawned terminal
+            # can switch focus back (requires xdotool)
+            if _has_linux_xdotool():
+                try:
+                    sublime_wid = subprocess.check_output(
+                        ['xdotool', 'getactivewindow'],
+                        timeout=2, stderr=subprocess.DEVNULL
+                    ).decode().strip()
+                    env['SUBLIME_TERMINAL_OPENER_WID'] = sublime_wid
+                except (Exception):
+                    pass
+
             # Run our process
             subprocess.Popen(args, cwd=location, env=env)
+
+            # On Linux, capture the new terminal's window ID after it
+            # appears and takes focus. Used by SwitchToTerminalCommand.
+            if _has_linux_xdotool():
+                def _capture_wid():
+                    try:
+                        wid = subprocess.check_output(
+                            ['xdotool', 'getactivewindow'],
+                            timeout=2, stderr=subprocess.DEVNULL
+                        ).decode().strip()
+                        if wid not in _terminal_wid_stack:
+                            _terminal_wid_stack.append(wid)
+                    except (Exception):
+                        pass
+                sublime.set_timeout(_capture_wid, 1500)
 
         except (OSError) as exception:
             print(str(exception))
@@ -217,9 +254,46 @@ class OpenTerminalProjectFolderCommand(sublime_plugin.WindowCommand, TerminalCom
 
 class SwitchToTerminalCommand(sublime_plugin.WindowCommand, TerminalCommand):
     def is_visible(self):
-        # only have an applescript to do this
-        return sys.platform == 'darwin'
+        if sys.platform == 'darwin':
+            return True
+        return _has_linux_xdotool()
 
     def run(self, paths=[], parameters=None):
-        package_dir = os.path.join(sublime.packages_path(), INSTALLED_DIR)
-        subprocess.Popen(os.path.join(package_dir, 'TerminalSwitch.sh'))
+        if sys.platform == 'darwin':
+            package_dir = os.path.join(sublime.packages_path(), INSTALLED_DIR)
+            subprocess.Popen(os.path.join(package_dir, 'TerminalSwitch.sh'))
+        elif sys.platform == 'linux':
+            try:
+                activated = False
+
+                # Walk the stack from most recent, prune dead windows
+                while _terminal_wid_stack:
+                    wid = _terminal_wid_stack[-1]
+                    try:
+                        subprocess.check_output(
+                            ['xdotool', 'getwindowname', wid],
+                            timeout=2, stderr=subprocess.DEVNULL)
+                        # Window exists -- activate it
+                        subprocess.Popen(['xdotool', 'windowactivate', wid])
+                        activated = True
+                        break
+                    except subprocess.CalledProcessError:
+                        _terminal_wid_stack.pop()
+
+                if not activated:
+                    # Fallback: activate by WM_CLASS
+                    terminal_class = get_setting('terminal_class', '')
+                    if not terminal_class:
+                        terminal = get_setting('terminal', '') or linux_terminal()
+                        terminal_class = os.path.basename(terminal)
+                    subprocess.Popen([
+                        'xdotool', 'search', '--class',
+                        terminal_class, 'windowactivate',
+                    ])
+            except (Exception) as exception:
+                print(str(exception))
+                sublime.error_message(
+                    'Terminal: xdotool not found. Install it with:\n'
+                    '- Debian/Ubuntu/Mint: sudo apt install xdotool\n'
+                    '- Arch: sudo pacman -S xdotool\n'
+                    '- Fedora: sudo dnf install xdotool')
