@@ -129,7 +129,9 @@ Here are some example configurations calling different terminals. Note that path
 }
 ```
 
-### xterm on GNU/Linux
+### GNU/Linux
+
+#### xterm
 
 ```json
 {
@@ -137,7 +139,7 @@ Here are some example configurations calling different terminals. Note that path
 }
 ```
 
-### gnome-terminal for CJK users on GNU/Linux
+#### gnome-terminal (CJK users)
 
 We unset LD_PRELOAD, as it may cause problems for Sublime Text with imfix.
 
@@ -147,6 +149,20 @@ We unset LD_PRELOAD, as it may cause problems for Sublime Text with imfix.
   "env": {"LD_PRELOAD": null}
 }
 ```
+
+#### Ghostty, Kitty, WezTerm, Alacritty
+
+Modern terminals that support GPU-accelerated rendering and 24-bit true color:
+
+```json
+{
+  "terminal": "ghostty"
+  // "terminal": "kitty"
+  // "terminal": "wezterm"
+  // "terminal": "alacritty"
+}
+```
+
 ### iTerm on MacOS.
 
 ```json
