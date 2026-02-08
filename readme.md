@@ -12,6 +12,17 @@ Download [Package Control](https://packagecontrol.io/) and use the *Package Cont
   Opens a terminal in the folder containing the currently opened file.  
 - **Open Terminal at Project Folder**
   Opens a terminal in the project folder containing the currently opened file.  
+- **Switch to Terminal**
+  Switches focus to the most recently opened terminal window.
+  On macOS this uses AppleScript. On Linux this requires
+  [xdotool](https://github.com/jordansissel/xdotool), pre-installed or
+  available via your distribution's package manager:
+
+  - Debian/Ubuntu/Mint: `sudo apt install xdotool`
+  - Arch: `sudo pacman -S xdotool`
+  - Fedora: `sudo dnf install xdotool`
+
+
 
 Terminals can be opened via the command palette, the editor context menu and the sidebar context menus. Additionally, you can set up key bindings.
 
@@ -42,6 +53,9 @@ The settings can be viewed and edited by accessing the *Preferences > Package Se
      - The environment variables changeset. Default environment variables used when invoking the terminal are inherited from Sublime Text.
      - The changeset may be used to overwrite/unset environment variables. Use `null` to indicate that the environment variable should be unset.
      - Default: `{}`
+ - **terminal_class**
+     - The WM_CLASS of the terminal, used by "Switch to Terminal" on Linux. If blank, derived from the `terminal` setting. Override this if your terminal's WM_CLASS differs from its executable name. Find yours with: `xdotool getactivewindow getwindowclassname`
+     - Default: `""`
 
 ## Custom Parameters
 
@@ -70,6 +84,37 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
  }
 }
 ```
+
+### Switching between Sublime Text and a terminal (Linux)
+
+1. **Switching from Sublime to terminal**
+
+    The "Switch to Terminal" command activates the most recently opened
+    terminal window that was opened from within Sublime Text (externally
+    launched terminals are not tracked). All terminals opened from Sublime
+    are tracked; the most recent live one is activated first. If it has
+    been closed, the command falls back to older ones. If no tracked
+    windows remain, it searches by window class as a final fallback.
+
+2. **Switching from terminal to Sublime**
+
+    Sublime Text also injects the `SUBLIME_TERMINAL_OPENER_WID` environment
+    variable into terminals it opens. You can use this to set up a shell
+    keybinding to switch focus back to Sublime Text. Simply add the following
+    to, e.g., your `~/.bashrc` file:
+
+    ```bash
+    # ~/.bashrc
+    if [ -n "$SUBLIME_TERMINAL_OPENER_WID" ]; then
+        bind -x '"\C-]": "xdotool windowactivate $SUBLIME_TERMINAL_OPENER_WID"'
+    fi
+    ```
+
+    Here `\C-]` refers to `Ctrl+]`. Any terminal opened from Sublime Text
+    will have this keybinding available in bash sessions that source
+    `~/.bashrc`. The keybinding is arbitrary and easy to change (see
+    [here](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html)
+    or [here](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html)).
 
 ## Example configurations
 
