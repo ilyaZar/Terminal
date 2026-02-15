@@ -91,6 +91,20 @@ def _has_linux_xdotool():
     return sys.platform == 'linux' and bool(shutil.which('xdotool'))
 
 
+def _find_wid_by_pid(pid):
+    """Find a terminal window ID by process PID. Returns None if not found."""
+    try:
+        result = subprocess.check_output(
+            ['xdotool', 'search', '--pid', str(pid)],
+            timeout=2, stderr=subprocess.DEVNULL
+        ).decode().strip()
+        if result:
+            return result.splitlines()[-1]
+    except (Exception):
+        pass
+    return None
+
+
 class TerminalSelector():
     default = None
 
@@ -184,18 +198,20 @@ class TerminalCommand():
                     pass
 
             # Run our process
-            subprocess.Popen(args, cwd=location, env=env)
+            proc = subprocess.Popen(args, cwd=location, env=env)
 
             # On Linux, capture the new terminal's window ID after it
             # appears and takes focus. Used by SwitchToTerminalCommand.
             if _has_linux_xdotool():
                 def _capture_wid():
                     try:
-                        wid = subprocess.check_output(
-                            ['xdotool', 'getactivewindow'],
-                            timeout=2, stderr=subprocess.DEVNULL
-                        ).decode().strip()
-                        if wid not in _terminal_wid_stack:
+                        wid = _find_wid_by_pid(proc.pid)
+                        if not wid:
+                            wid = subprocess.check_output(
+                                ['xdotool', 'getactivewindow'],
+                                timeout=2, stderr=subprocess.DEVNULL
+                            ).decode().strip()
+                        if wid and wid not in _terminal_wid_stack:
                             _terminal_wid_stack.append(wid)
                     except (Exception):
                         pass
