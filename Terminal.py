@@ -261,7 +261,7 @@ class SwitchToTerminalCommand(sublime_plugin.WindowCommand, TerminalCommand):
     def run(self, paths=[], parameters=None):
         if sys.platform == 'darwin':
             package_dir = os.path.join(sublime.packages_path(), INSTALLED_DIR)
-            subprocess.Popen(os.path.join(package_dir, 'TerminalSwitch.sh'))
+            subprocess.run(os.path.join(package_dir, 'TerminalSwitch.sh'))
         elif sys.platform == 'linux':
             try:
                 activated = False
@@ -274,7 +274,9 @@ class SwitchToTerminalCommand(sublime_plugin.WindowCommand, TerminalCommand):
                             ['xdotool', 'getwindowname', wid],
                             timeout=2, stderr=subprocess.DEVNULL)
                         # Window exists -- activate it
-                        subprocess.Popen(['xdotool', 'windowactivate', wid])
+                        subprocess.run(
+                            ['xdotool', 'windowactivate', wid],
+                            timeout=2, stderr=subprocess.DEVNULL)
                         activated = True
                         break
                     except subprocess.CalledProcessError:
@@ -286,10 +288,10 @@ class SwitchToTerminalCommand(sublime_plugin.WindowCommand, TerminalCommand):
                     if not terminal_class:
                         terminal = get_setting('terminal', '') or linux_terminal()
                         terminal_class = os.path.basename(terminal)
-                    subprocess.Popen([
+                    subprocess.run([
                         'xdotool', 'search', '--class',
                         terminal_class, 'windowactivate',
-                    ])
+                    ], timeout=2, stderr=subprocess.DEVNULL)
             except (Exception) as exception:
                 print(str(exception))
                 sublime.error_message(
