@@ -47,8 +47,8 @@ Note that in version 2 of this package, we stopped enabling these bindings by de
 The settings can be viewed and edited by accessing the *Preferences > Package Settings > Terminal > Settings* menu entry. 
 
  - **terminal**
-     - The terminal to execute, will default to the OS default if blank.
-     - Default: `""`
+     - The terminal to execute, will default to the OS default if not set.
+     - Default: `null`
  - **parameters**
      - The parameters to pass to the terminal. These parameters will be used if no [custom parameters](#custom-parameters) are passed.
      - Default: `[]`
@@ -58,7 +58,7 @@ The settings can be viewed and edited by accessing the *Preferences > Package Se
      - Default: `{}`
  - **terminal_class**
      - The WM_CLASS of the terminal, used by "Switch to Terminal" on Linux. If blank, derived from the `terminal` setting. Override this if your terminal's WM_CLASS differs from its executable name. Find yours with: `xdotool getactivewindow getwindowclassname`
-     - Default: `""`
+     - Default: `null`
 
 ## Custom Parameters
 
