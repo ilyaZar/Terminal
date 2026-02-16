@@ -14,15 +14,19 @@ Download [Package Control](https://packagecontrol.io/) and use the *Package Cont
   Opens a terminal in the project folder containing the currently opened file.  
 - **Switch to Terminal**
   Switches focus to the most recently opened terminal window.
-  Available on macOS (via AppleScript) and Linux (via
-  [xdotool](https://github.com/jordansissel/xdotool)).
+  Available on macOS (via AppleScript) and Linux
+  ([xdotool](https://github.com/jordansissel/xdotool) on X11,
+  [hyprctl](https://wiki.hyprland.org/) on Hyprland;
+  other Wayland compositors are not currently supported).
   Not currently supported on Windows.
 
-  On Linux, xdotool must be installed:
+  On Linux with X11, xdotool must be installed:
 
   - Debian/Ubuntu/Mint: `sudo apt install xdotool`
   - Arch: `sudo pacman -S xdotool`
   - Fedora: `sudo dnf install xdotool`
+
+  On Hyprland, `hyprctl` is detected automatically (no extra install needed).
 
 
 
@@ -101,10 +105,11 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
 
 2. **Switching from terminal to Sublime**
 
-    Sublime Text also injects the `SUBLIME_TERMINAL_OPENER_WID` environment
-    variable into terminals it opens. You can use this to set up a shell
-    key binding to switch focus back to Sublime Text. Simply add the following
-    to, e.g., your `~/.bashrc` file:
+    To switch focus back from the terminal to Sublime, add a shell key
+    binding to your `~/.bashrc` (the plugin cannot register bindings
+    inside external terminals):
+
+    For X11 (xdotool):
 
     ```bash
     # ~/.bashrc
@@ -113,9 +118,21 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
     fi
     ```
 
-    Here `\C-]` refers to `Ctrl+]`. Any terminal opened from Sublime Text
-    will have this key binding available in bash sessions that source
-    `~/.bashrc`. The key binding is arbitrary and easy to change (see
+    On X11, the plugin injects `SUBLIME_TERMINAL_OPENER_WID` into the
+    terminal's environment with Sublime's window ID.
+
+    For Hyprland (Wayland):
+
+    ```bash
+    # ~/.bashrc
+    bind -x '"\C-]": "hyprctl dispatch focuswindow tag:sublime-opener >/dev/null 2>&1"'
+    ```
+
+    On Hyprland, the plugin tags Sublime's window instead of using an
+    environment variable.
+
+    Here `\C-]` refers to `Ctrl+]`. The key binding is arbitrary and
+    easy to change (see
     [here](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html)
     or [here](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html)).
 
