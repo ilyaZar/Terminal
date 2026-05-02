@@ -136,6 +136,27 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
     [here](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html)
     or [here](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html)).
 
+#### Troubleshooting
+
+Some Hyprland or Wayland terminals may inherit the working directory from an
+existing terminal window instead of using the cwd passed by Sublime. If a new
+terminal opens in a previous shell directory, configure the terminal to accept
+an explicit working directory argument.
+
+For example, Ghostty on Hyprland can be configured as:
+
+```json
+{
+  "terminal": "ghostty",
+  "parameters": [
+    "--gtk-single-instance=false",
+    "--window-inherit-working-directory=false",
+    "--working-directory=%CWD%"
+  ],
+  "terminal_class": "com.mitchellh.ghostty"
+}
+```
+
 ## Example configurations
 
 Here are some example configurations calling different terminals. Note that paths to executables might differ on your machine.
