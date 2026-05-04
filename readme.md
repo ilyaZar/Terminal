@@ -125,11 +125,18 @@ A parameter may also contain the *%CWD%* placeholder, which will be substituted 
 
     ```bash
     # ~/.bashrc
-    bind -x '"\C-]": "hyprctl dispatch focuswindow tag:sublime-opener >/dev/null 2>&1"'
+    sublime_terminal_focus_opener() {
+        hyprctl dispatch focuswindow "tag:$SUBLIME_TERMINAL_OPENER_TAG" \
+            >/dev/null 2>&1
+    }
+
+    if [ -n "$SUBLIME_TERMINAL_OPENER_TAG" ]; then
+        bind -x '"\C-]": sublime_terminal_focus_opener'
+    fi
     ```
 
-    On Hyprland, the plugin tags Sublime's window instead of using an
-    environment variable.
+    On Hyprland, the plugin tags Sublime's opener window and injects
+    `SUBLIME_TERMINAL_OPENER_TAG` into the terminal environment.
 
     Here `\C-]` refers to `Ctrl+]`. The key binding is arbitrary and
     easy to change (see
